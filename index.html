@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soi et non-soi — Chapitre 1, Activité 3 — EB8 SVT</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS — thème "carte d'identité biologique"
+     (la molécule HLA est décrite dans le cours comme une
+     "carte d'identité" propre à chaque individu : le visuel
+     du jeu reprend ce motif — badges, cartes, tampons).
+  ============================================================ */
+  :root{
+    --bg-1:#eaf6f4;
+    --bg-2:#f4fbf5;
+    --ink:#20303a;
+    --ink-soft:#4d616c;
+    --soi:#1e88a8;        /* bleu-sarcelle : le "soi" */
+    --soi-soft:#dff2f6;
+    --nonsoi:#c8366b;     /* framboise : le "non-soi" */
+    --nonsoi-soft:#fbe4ec;
+    --accent:#e08e2b;     /* ambre : greffes / défi */
+    --accent-soft:#fdf1de;
+    --ok:#3f9a63;
+    --ok-soft:#e3f5e9;
+    --bad:#d1483f;
+    --bad-soft:#fbe6e4;
+    --card:#ffffff;
+    --card-line:#dfe7e6;
+    --radius:16px;
+    --shadow:0 6px 18px rgba(32,48,58,0.08);
+    --font: 'Trebuchet MS','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--bg-1),var(--bg-2) 55%);
+    min-height:100vh;
+    line-height:1.45;
+  }
+  h1,h2,h3{margin:0 0 .4em 0;}
+  p{margin:0 0 .8em 0;}
+  button{font-family:inherit;}
+
+  /* Focus visibility for keyboard users */
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+    outline:3px solid #2b6cb0;
+    outline-offset:2px;
+  }
+
+  /* ---------- Layout shell ---------- */
+  .wrap{max-width:980px;margin:0 auto;padding:22px 18px 60px;}
+
+  header.app-header{
+    display:flex;align-items:center;gap:16px;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:var(--radius);
+    padding:18px 22px;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .badge-icon{
+    font-size:2.4rem;
+    width:64px;height:64px;flex:0 0 64px;
+    border-radius:50%;
+    background:conic-gradient(from 220deg, var(--soi), var(--nonsoi), var(--accent), var(--soi));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    box-shadow:0 4px 10px rgba(32,48,58,0.18);
+  }
+  .app-header .titles{flex:1;min-width:220px;}
+  .app-header h1{font-size:1.35rem;}
+  .app-header .meta{color:var(--ink-soft);font-size:.92rem;}
+
+  /* ---------- Reminder cards (rappel du cours) ---------- */
+  .reminder{
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px 20px;
+    margin-bottom:20px;
+  }
+  .reminder > summary{
+    cursor:pointer;font-weight:bold;font-size:1.05rem;
+    list-style:none;display:flex;align-items:center;gap:8px;
+  }
+  .reminder > summary::-webkit-details-marker{display:none;}
+  .reminder > summary::before{content:"📇";}
+  .reminder-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:12px;margin-top:14px;
+  }
+  .reminder-card{
+    border-radius:12px;padding:12px 14px;font-size:.92rem;
+  }
+  .reminder-card h4{margin:0 0 .3em;font-size:.98rem;}
+  .reminder-card.soi{background:var(--soi-soft);color:#0d4c5e;}
+  .reminder-card.nonsoi{background:var(--nonsoi-soft);color:#7a1c40;}
+  .reminder-card.antigene{background:var(--accent-soft);color:#7a4c0d;}
+  .reminder-card.greffe{background:#eef1fb;color:#333d7a;}
+
+  /* ---------- Game nav ---------- */
+  nav.game-nav{
+    display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;
+  }
+  nav.game-nav button{
+    border:2px solid transparent;
+    background:var(--card);
+    color:var(--ink);
+    padding:10px 14px;
+    border-radius:999px;
+    font-size:.92rem;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  nav.game-nav button:hover{transform:translateY(-2px);}
+  nav.game-nav button[aria-selected="true"]{
+    border-color:var(--soi);
+    color:var(--soi);
+    background:var(--soi-soft);
+  }
+  nav.game-nav button .done-mark{color:var(--ok);margin-left:4px;}
+
+  /* ---------- Game panels ---------- */
+  .panel{
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:22px 24px;
+    display:none;
+    animation:fadeIn .25s ease;
+  }
+  .panel.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .panel h2{font-size:1.2rem;color:var(--ink);}
+  .panel .instructions{color:var(--ink-soft);font-size:.95rem;margin-bottom:16px;}
+
+  .score-pill{
+    display:inline-block;background:var(--accent-soft);color:#7a4c0d;
+    padding:4px 12px;border-radius:999px;font-weight:bold;font-size:.85rem;
+    margin-bottom:12px;
+  }
+
+  .feedback{
+    min-height:1.4em;
+    font-weight:bold;
+    border-radius:10px;
+    padding:8px 12px;
+    margin:12px 0;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--ok-soft);color:#245c3c;}
+  .feedback.bad{background:var(--bad-soft);color:#7d2b25;}
+
+  .reset-btn, .primary-btn{
+    border:none;border-radius:10px;padding:10px 18px;font-weight:bold;
+    cursor:pointer;font-size:.95rem;
+  }
+  .primary-btn{background:var(--soi);color:#fff;}
+  .primary-btn:hover{background:#166f8a;}
+  .reset-btn{background:#eef1f1;color:var(--ink);margin-top:14px;}
+  .reset-btn:hover{background:#e2e8e8;}
+
+  /* ---- Jeu 1 : Classement Soi / Non-soi ---- */
+  #classement-item{
+    background:var(--bg-1);
+    border:2px dashed var(--soi);
+    border-radius:14px;
+    padding:22px;
+    text-align:center;
+    font-size:1.1rem;
+    font-weight:bold;
+    margin-bottom:16px;
+    min-height:1.4em;
+  }
+  .classement-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+  .classement-btns button{
+    flex:1 1 180px;
+    padding:16px;border-radius:12px;border:2px solid transparent;
+    font-weight:bold;font-size:1rem;cursor:pointer;
+  }
+  #btn-soi{background:var(--soi-soft);color:#0d4c5e;}
+  #btn-soi:hover{border-color:var(--soi);}
+  #btn-nonsoi{background:var(--nonsoi-soft);color:#7a1c40;}
+  #btn-nonsoi:hover{border-color:var(--nonsoi);}
+  .classement-progress{
+    display:flex;gap:6px;justify-content:center;margin-top:18px;flex-wrap:wrap;
+  }
+  .classement-progress span{
+    width:14px;height:14px;border-radius:50%;background:#dbe4e4;display:inline-block;
+  }
+  .classement-progress span.done-ok{background:var(--ok);}
+  .classement-progress span.done-bad{background:var(--bad);}
+
+  /* ---- Jeu 2 : Associer ---- */
+  .match-cols{display:flex;gap:24px;flex-wrap:wrap;}
+  .match-col{flex:1 1 260px;display:flex;flex-direction:column;gap:10px;}
+  .match-card{
+    background:var(--bg-1);
+    border:2px solid var(--card-line);
+    border-radius:12px;padding:12px 14px;font-size:.95rem;
+    cursor:pointer;text-align:left;
+  }
+  .match-card:hover{border-color:var(--soi);}
+  .match-card.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .match-card.locked{background:var(--ok-soft);border-color:var(--ok);cursor:default;color:#245c3c;}
+  .match-card.locked:hover{border-color:var(--ok);}
+  .match-card.shake{animation:shake .3s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    75%{transform:translateX(6px);}
+  }
+
+  /* ---- Jeu 3 : Qui suis-je ---- */
+  .riddle-clue{
+    background:var(--accent-soft);border-radius:12px;padding:16px;
+    font-style:italic;font-size:1.02rem;margin-bottom:16px;color:#5a3c0d;
+  }
+  .riddle-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+  .riddle-options button{
+    padding:12px;border-radius:12px;border:2px solid var(--card-line);
+    background:var(--bg-1);font-size:.95rem;cursor:pointer;text-align:left;
+  }
+  .riddle-options button:hover{border-color:var(--soi);}
+  .riddle-options button.correct{background:var(--ok-soft);border-color:var(--ok);}
+  .riddle-options button.incorrect{background:var(--bad-soft);border-color:var(--bad);}
+
+  /* ---- Jeu 4 : Remets en ordre ---- */
+  .order-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:520px;}
+  .order-item{
+    display:flex;align-items:center;gap:12px;
+    background:var(--bg-1);border:2px solid var(--card-line);border-radius:12px;
+    padding:10px 14px;font-weight:bold;
+  }
+  .order-item .rank{
+    width:28px;height:28px;border-radius:50%;background:var(--soi);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:.85rem;flex:0 0 28px;
+  }
+  .order-item .txt{flex:1;}
+  .order-item .arrows{display:flex;gap:4px;}
+  .order-item .arrows button{
+    border:none;background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;
+    font-size:.95rem;box-shadow:0 1px 3px rgba(0,0,0,.15);
+  }
+  .order-item.correct{border-color:var(--ok);background:var(--ok-soft);}
+  .order-item.incorrect{border-color:var(--bad);background:var(--bad-soft);}
+
+  /* ---- Jeu 5 : Vrai / Faux rapide ---- */
+  .vf-statement{
+    background:var(--bg-1);border-radius:12px;padding:18px;font-size:1.05rem;
+    font-weight:bold;margin-bottom:16px;min-height:2.2em;display:flex;align-items:center;
+  }
+  .vf-btns{display:flex;gap:14px;}
+  .vf-btns button{
+    flex:1;padding:14px;border-radius:12px;border:none;font-weight:bold;font-size:1rem;cursor:pointer;
+  }
+  #vf-vrai{background:var(--ok-soft);color:#245c3c;}
+  #vf-vrai:hover{background:#cdeedb;}
+  #vf-faux{background:var(--bad-soft);color:#7d2b25;}
+  #vf-faux:hover{background:#f6d2ce;}
+
+  /* ---- Jeu 6 : Défi final chronométré ---- */
+  .timer-bar-track{width:100%;height:10px;background:#e4ecec;border-radius:999px;overflow:hidden;margin-bottom:14px;}
+  .timer-bar-fill{height:100%;background:var(--accent);width:100%;transition:width 1s linear;}
+  .defi-question{font-size:1.08rem;font-weight:bold;margin-bottom:14px;}
+  .defi-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+  .defi-options button{
+    padding:12px;border-radius:12px;border:2px solid var(--card-line);
+    background:var(--bg-1);font-size:.93rem;cursor:pointer;text-align:left;
+  }
+  .defi-options button:hover{border-color:var(--accent);}
+  .defi-options button.correct{background:var(--ok-soft);border-color:var(--ok);}
+  .defi-options button.incorrect{background:var(--bad-soft);border-color:var(--bad);}
+  .defi-result{text-align:center;padding:20px;}
+  .defi-result .big-score{font-size:2.4rem;font-weight:bold;color:var(--accent);}
+
+  footer{
+    text-align:center;color:var(--ink-soft);font-size:.82rem;margin-top:26px;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:560px){
+    .app-header{flex-direction:column;text-align:center;}
+    nav.game-nav{justify-content:center;}
+    .match-cols{flex-direction:column;}
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="app-header">
+    <div class="badge-icon" aria-hidden="true">🪪</div>
+    <div class="titles">
+      <h1>Soi et non-soi</h1>
+      <div class="meta">Chapitre 1 · Immunologie — Activité 3 — SVT, Classe EB8</div>
+    </div>
+  </header>
+
+  <details class="reminder">
+    <summary>Rappel du cours</summary>
+    <div class="reminder-grid">
+      <div class="reminder-card soi">
+        <h4>Le soi</h4>
+        Molécules propres à chaque individu (marqueurs HLA), tolérées par le système immunitaire.
+      </div>
+      <div class="reminder-card nonsoi">
+        <h4>Le non-soi</h4>
+        Virus, bactéries, cellules d'un autre individu, ou nos propres cellules modifiées (infection, cancer) — attaqués par le système immunitaire.
+      </div>
+      <div class="reminder-card antigene">
+        <h4>L'antigène</h4>
+        Molécule étrangère qui déclenche une réaction immunitaire : cellulaire (sur un microorganisme) ou soluble (libre dans le sang).
+      </div>
+      <div class="reminder-card greffe">
+        <h4>Les greffes</h4>
+        Autogreffe (soi-même) et isogreffe (vrais jumeaux) sont généralement acceptées ; l'allogreffe est généralement rejetée, selon la similitude des molécules HLA.
+      </div>
+    </div>
+  </details>
+
+  <nav class="game-nav" role="tablist" aria-label="Choisir un jeu">
+    <button role="tab" aria-selected="true" data-target="classement">🗂️ Classement <span class="done-mark" data-done="classement"></span></button>
+    <button role="tab" aria-selected="false" data-target="associer">🔗 Associer <span class="done-mark" data-done="associer"></span></button>
+    <button role="tab" aria-selected="false" data-target="riddle">❓ Qui suis-je ? <span class="done-mark" data-done="riddle"></span></button>
+    <button role="tab" aria-selected="false" data-target="order">📊 Classer par ordre <span class="done-mark" data-done="order"></span></button>
+    <button role="tab" aria-selected="false" data-target="vf">⚡ Vrai/Faux <span class="done-mark" data-done="vf"></span></button>
+    <button role="tab" aria-selected="false" data-target="defi">⏱️ Défi final <span class="done-mark" data-done="defi"></span></button>
+  </nav>
+
+  <!-- ============================================================
+       JEU 1 — CLASSEMENT : Soi ou non-soi ?
+  ============================================================= -->
+  <section id="panel-classement" class="panel active" role="tabpanel" aria-label="Jeu classement">
+    <h2>Classement — Soi ou non-soi ?</h2>
+    <p class="instructions">Lis chaque élément et indique s'il appartient au « soi » ou au « non-soi ».</p>
+    <div class="score-pill" id="classement-score">Score : 0 / 6</div>
+    <div id="classement-item">—</div>
+    <div class="classement-btns">
+      <button id="btn-soi">✅ Soi</button>
+      <button id="btn-nonsoi">🚫 Non-soi</button>
+    </div>
+    <div class="feedback" id="classement-feedback" role="status" aria-live="polite"></div>
+    <div class="classement-progress" id="classement-progress"></div>
+    <button class="reset-btn" id="classement-reset">↻ Recommencer ce jeu</button>
+  </section>
+
+  <!-- ============================================================
+       JEU 2 — ASSOCIER : type de greffe ↔ définition
+  ============================================================= -->
+  <section id="panel-associer" class="panel" role="tabpanel" aria-label="Jeu associer">
+    <h2>Associer — Les types de greffe</h2>
+    <p class="instructions">Clique sur un type de greffe à gauche, puis sur la description qui lui correspond à droite.</p>
+    <div class="score-pill" id="associer-score">Paires trouvées : 0 / 3</div>
+    <div class="match-cols">
+      <div class="match-col" id="match-left"></div>
+      <div class="match-col" id="match-right"></div>
+    </div>
+    <div class="feedback" id="associer-feedback" role="status" aria-live="polite"></div>
+    <button class="reset-btn" id="associer-reset">↻ Recommencer ce jeu</button>
+  </section>
+
+  <!-- ============================================================
+       JEU 3 — QUI SUIS-JE ?
+  ============================================================= -->
+  <section id="panel-riddle" class="panel" role="tabpanel" aria-label="Jeu qui suis-je">
+    <h2>Qui suis-je ?</h2>
+    <p class="instructions">Lis l'indice et choisis la bonne réponse.</p>
+    <div class="score-pill" id="riddle-score">Devinette 1 / 4</div>
+    <div class="riddle-clue" id="riddle-clue">—</div>
+    <div class="riddle-options" id="riddle-options"></div>
+    <div class="feedback" id="riddle-feedback" role="status" aria-live="polite"></div>
+    <button class="reset-btn" id="riddle-reset">↻ Recommencer ce jeu</button>
+  </section>
+
+  <!-- ============================================================
+       JEU 4 — REMETS EN ORDRE
+  ============================================================= -->
+  <section id="panel-order" class="panel" role="tabpanel" aria-label="Jeu remettre en ordre">
+    <h2>Classe par ordre</h2>
+    <p class="instructions">Utilise les flèches pour ranger les 3 types de greffe, de celle qui a le <strong>plus</strong> de chances d'être acceptée à celle qui en a le <strong>moins</strong>.</p>
+    <ol class="order-list" id="order-list"></ol>
+    <div class="feedback" id="order-feedback" role="status" aria-live="polite"></div>
+    <button class="primary-btn" id="order-check">✓ Vérifier l'ordre</button>
+    <button class="reset-btn" id="order-reset">↻ Recommencer ce jeu</button>
+  </section>
+
+  <!-- ============================================================
+       JEU 5 — VRAI / FAUX RAPIDE
+  ============================================================= -->
+  <section id="panel-vf" class="panel" role="tabpanel" aria-label="Jeu vrai ou faux">
+    <h2>Vrai ou faux ?</h2>
+    <p class="instructions">Lis l'affirmation et décide si elle est vraie ou fausse.</p>
+    <div class="score-pill" id="vf-score">Affirmation 1 / 6</div>
+    <div class="vf-statement" id="vf-statement">—</div>
+    <div class="vf-btns">
+      <button id="vf-vrai">✔ Vrai</button>
+      <button id="vf-faux">✘ Faux</button>
+    </div>
+    <div class="feedback" id="vf-feedback" role="status" aria-live="polite"></div>
+    <button class="reset-btn" id="vf-reset">↻ Recommencer ce jeu</button>
+  </section>
+
+  <!-- ============================================================
+       JEU 6 — DÉFI FINAL CHRONOMÉTRÉ
+  ============================================================= -->
+  <section id="panel-defi" class="panel" role="tabpanel" aria-label="Défi final chronométré">
+    <h2>Défi final chronométré</h2>
+    <p class="instructions">5 questions, 15 secondes chacune. Réponds le plus vite possible !</p>
+    <div id="defi-start-screen">
+      <button class="primary-btn" id="defi-start">🚀 Démarrer le défi</button>
+    </div>
+    <div id="defi-game-screen" style="display:none;">
+      <div class="score-pill" id="defi-score">Question 1 / 5 — Score : 0</div>
+      <div class="timer-bar-track"><div class="timer-bar-fill" id="defi-timer-fill"></div></div>
+      <div class="defi-question" id="defi-question">—</div>
+      <div class="defi-options" id="defi-options"></div>
+      <div class="feedback" id="defi-feedback" role="status" aria-live="polite"></div>
+    </div>
+    <div id="defi-result-screen" style="display:none;" class="defi-result">
+      <div class="big-score" id="defi-final-score">0 / 5</div>
+      <p id="defi-result-msg"></p>
+      <button class="primary-btn" id="defi-retry">↻ Retenter le défi</button>
+    </div>
+  </section>
+
+  <footer>Collège d'Irfane — SVT — Jeu interactif hors-ligne, sans connexion requise.</footer>
+</div>
+
+<script>
+/* ============================================================
+   NAVIGATION ENTRE JEUX
+============================================================= */
+const tabs = document.querySelectorAll('.game-nav button[role="tab"]');
+const panels = document.querySelectorAll('.panel');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+    tab.setAttribute('aria-selected', 'true');
+    panels.forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab.dataset.target).classList.add('active');
+  });
+});
+
+function markDone(gameKey){
+  const el = document.querySelector('.done-mark[data-done="' + gameKey + '"]');
+  if(el) el.textContent = '✓';
+}
+
+/* Fisher-Yates shuffle (used by several games so the order
+   is different each time the page is reloaded or a game is reset) */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ============================================================
+   JEU 1 — CLASSEMENT : Soi ou non-soi ?
+============================================================= */
+(function(){
+  const DATA = [
+    { text: "Une bactérie", answer: "nonsoi" },
+    { text: "Un virus", answer: "nonsoi" },
+    { text: "Une molécule HLA présente sur mes propres cellules", answer: "soi" },
+    { text: "Une cellule provenant d'un autre individu", answer: "nonsoi" },
+    { text: "Une de mes cellules transformée par un cancer", answer: "nonsoi" },
+    { text: "Un marqueur biologique propre à mon organisme", answer: "soi" }
+  ];
+
+  let order = [];
+  let index = 0;
+  let score = 0;
+  const results = [];
+
+  const itemEl = document.getElementById('classement-item');
+  const scoreEl = document.getElementById('classement-score');
+  const feedbackEl = document.getElementById('classement-feedback');
+  const progressEl = document.getElementById('classement-progress');
+  const btnSoi = document.getElementById('btn-soi');
+  const btnNonSoi = document.getElementById('btn-nonsoi');
+
+  function initProgress(){
+    progressEl.innerHTML = '';
+    DATA.forEach(() => {
+      const dot = document.createElement('span');
+      progressEl.appendChild(dot);
+    });
+  }
+
+  function start(){
+    order = shuffle(DATA);
+    index = 0; score = 0; results.length = 0;
+    scoreEl.textContent = 'Score : 0 / ' + DATA.length;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    initProgress();
+    showCurrent();
+    btnSoi.disabled = false;
+    btnNonSoi.disabled = false;
+  }
+
+  function showCurrent(){
+    if(index >= order.length){
+      itemEl.textContent = "Terminé !";
+      btnSoi.disabled = true;
+      btnNonSoi.disabled = true;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = 'Jeu terminé — score final : ' + score + ' / ' + order.length;
+      markDone('classement');
+      return;
+    }
+    itemEl.textContent = order[index].text;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+  }
+
+  function answer(choice){
+    if(index >= order.length) return;
+    const correct = order[index].answer === choice;
+    const dot = progressEl.children[index];
+    if(correct){
+      score++;
+      dot.classList.add('done-ok');
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = '✓ Exact !';
+    } else {
+      dot.classList.add('done-bad');
+      feedbackEl.className = 'feedback show bad';
+      const bonneReponse = order[index].answer === 'soi' ? 'Soi' : 'Non-soi';
+      feedbackEl.textContent = '✗ Pas tout à fait — la bonne réponse était : ' + bonneReponse;
+    }
+    scoreEl.textContent = 'Score : ' + score + ' / ' + order.length;
+    index++;
+    setTimeout(showCurrent, 1100);
+  }
+
+  btnSoi.addEventListener('click', () => answer('soi'));
+  btnNonSoi.addEventListener('click', () => answer('nonsoi'));
+  document.getElementById('classement-reset').addEventListener('click', start);
+
+  start();
+})();
+
+/* ============================================================
+   JEU 2 — ASSOCIER : type de greffe ↔ définition
+============================================================= */
+(function(){
+  const PAIRS = [
+    { id: 'auto', left: 'Autogreffe', right: "Greffe sur soi-même — toujours acceptée" },
+    { id: 'iso', left: 'Isogreffe', right: "Greffe entre vrais jumeaux — généralement acceptée" },
+    { id: 'allo', left: 'Allogreffe', right: "Greffe entre deux individus différents (même espèce) — généralement rejetée" }
+  ];
+
+  let selectedLeft = null;
+  let matchedCount = 0;
+  const leftCol = document.getElementById('match-left');
+  const rightCol = document.getElementById('match-right');
+  const scoreEl = document.getElementById('associer-score');
+  const feedbackEl = document.getElementById('associer-feedback');
+
+  function build(){
+    matchedCount = 0;
+    selectedLeft = null;
+    scoreEl.textContent = 'Paires trouvées : 0 / ' + PAIRS.length;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    leftCol.innerHTML = '';
+    rightCol.innerHTML = '';
+
+    const leftShuffled = shuffle(PAIRS);
+    const rightShuffled = shuffle(PAIRS);
+
+    leftShuffled.forEach(pair => {
+      const card = document.createElement('button');
+      card.className = 'match-card';
+      card.type = 'button';
+      card.textContent = pair.left;
+      card.dataset.id = pair.id;
+      card.dataset.side = 'left';
+      card.addEventListener('click', onCardClick);
+      leftCol.appendChild(card);
+    });
+    rightShuffled.forEach(pair => {
+      const card = document.createElement('button');
+      card.className = 'match-card';
+      card.type = 'button';
+      card.textContent = pair.right;
+      card.dataset.id = pair.id;
+      card.dataset.side = 'right';
+      card.addEventListener('click', onCardClick);
+      rightCol.appendChild(card);
+    });
+  }
+
+  function onCardClick(e){
+    const card = e.currentTarget;
+    if(card.classList.contains('locked')) return;
+
+    if(card.dataset.side === 'left'){
+      if(selectedLeft) selectedLeft.classList.remove('selected');
+      selectedLeft = card;
+      card.classList.add('selected');
+      feedbackEl.className = 'feedback';
+      return;
+    }
+
+    // right-side click
+    if(!selectedLeft){
+      feedbackEl.className = 'feedback show bad';
+      feedbackEl.textContent = 'Choisis d\'abord un type de greffe à gauche.';
+      return;
+    }
+    if(selectedLeft.dataset.id === card.dataset.id){
+      selectedLeft.classList.remove('selected');
+      selectedLeft.classList.add('locked');
+      card.classList.add('locked');
+      selectedLeft = null;
+      matchedCount++;
+      scoreEl.textContent = 'Paires trouvées : ' + matchedCount + ' / ' + PAIRS.length;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = '✓ Bonne association !';
+      if(matchedCount === PAIRS.length){
+        feedbackEl.textContent = '✓ Toutes les paires sont trouvées, bravo !';
+        markDone('associer');
+      }
+    } else {
+      card.classList.add('shake');
+      selectedLeft.classList.add('shake');
+      feedbackEl.className = 'feedback show bad';
+      feedbackEl.textContent = '✗ Ce n\'est pas la bonne paire, réessaie.';
+      setTimeout(() => {
+        card.classList.remove('shake');
+        if(selectedLeft){
+          selectedLeft.classList.remove('shake', 'selected');
+          selectedLeft = null;
+        }
+      }, 300);
+    }
+  }
+
+  document.getElementById('associer-reset').addEventListener('click', build);
+  build();
+})();
+
+/* ============================================================
+   JEU 3 — QUI SUIS-JE ?
+============================================================= */
+(function(){
+  const RIDDLES = [
+    {
+      clue: "Je suis une molécule étrangère au corps humain, portée par un microorganisme. Ma présence déclenche une réaction immunitaire.",
+      options: ["Un anticorps", "Un antigène", "Une molécule HLA", "Un greffon"],
+      answer: "Un antigène"
+    },
+    {
+      clue: "Je suis une protéine propre à chaque individu, une véritable « carte d'identité biologique ». On me trouve sur la membrane de toutes les cellules nucléées.",
+      options: ["Un antigène soluble", "Une molécule HLA", "Un donneur", "Une allogreffe"],
+      answer: "Une molécule HLA"
+    },
+    {
+      clue: "Je suis libre dans le sang, comme une toxine. On dit de moi que je suis « soluble ».",
+      options: ["Un antigène cellulaire", "Un antigène soluble", "Une cellule du non-soi", "Une autogreffe"],
+      answer: "Un antigène soluble"
+    },
+    {
+      clue: "Je transfère un tissu ou un organe entre deux individus différents, mais de la même espèce. Je suis généralement rejetée par l'organisme du receveur.",
+      options: ["Une autogreffe", "Une isogreffe", "Une allogreffe", "Un antigène"],
+      answer: "Une allogreffe"
+    }
+  ];
+
+  let order = [];
+  let index = 0;
+  let score = 0;
+  let locked = false;
+
+  const clueEl = document.getElementById('riddle-clue');
+  const optionsEl = document.getElementById('riddle-options');
+  const scoreEl = document.getElementById('riddle-score');
+  const feedbackEl = document.getElementById('riddle-feedback');
+
+  function start(){
+    order = shuffle(RIDDLES);
+    index = 0; score = 0;
+    showCurrent();
+  }
+
+  function showCurrent(){
+    locked = false;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    if(index >= order.length){
+      clueEl.textContent = 'Toutes les devinettes sont résolues !';
+      optionsEl.innerHTML = '';
+      scoreEl.textContent = 'Score final : ' + score + ' / ' + order.length;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = 'Bravo, tu as terminé les devinettes !';
+      markDone('riddle');
+      return;
+    }
+    scoreEl.textContent = 'Devinette ' + (index + 1) + ' / ' + order.length;
+    const current = order[index];
+    clueEl.textContent = current.clue;
+    optionsEl.innerHTML = '';
+    shuffle(current.options).forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => selectOption(btn, opt, current.answer));
+      optionsEl.appendChild(btn);
+    });
+  }
+
+  function selectOption(btn, chosen, correctAnswer){
+    if(locked) return;
+    locked = true;
+    const allBtns = optionsEl.querySelectorAll('button');
+    allBtns.forEach(b => {
+      b.disabled = true;
+      if(b.textContent === correctAnswer) b.classList.add('correct');
+    });
+    if(chosen === correctAnswer){
+      score++;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = '✓ Exact !';
+    } else {
+      btn.classList.add('incorrect');
+      feedbackEl.className = 'feedback show bad';
+      feedbackEl.textContent = '✗ La bonne réponse était : ' + correctAnswer;
+    }
+    index++;
+    setTimeout(showCurrent, 1300);
+  }
+
+  document.getElementById('riddle-reset').addEventListener('click', start);
+  start();
+})();
+
+/* ============================================================
+   JEU 4 — REMETS EN ORDRE (similitude HLA -> chances d'acceptation)
+============================================================= */
+(function(){
+  // Ordre correct : du plus accepté au moins accepté
+  const CORRECT_ORDER = ['Autogreffe', 'Isogreffe', 'Allogreffe'];
+  let current = [];
+
+  const listEl = document.getElementById('order-list');
+  const feedbackEl = document.getElementById('order-feedback');
+
+  function build(){
+    current = shuffle(CORRECT_ORDER);
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    render();
+  }
+
+  function render(){
+    listEl.innerHTML = '';
+    current.forEach((name, i) => {
+      const li = document.createElement('li');
+      li.className = 'order-item';
+      li.innerHTML =
+        '<span class="rank">' + (i + 1) + '</span>' +
+        '<span class="txt">' + name + '</span>' +
+        '<span class="arrows">' +
+          '<button type="button" data-dir="up" aria-label="Monter ' + name + '">▲</button>' +
+          '<button type="button" data-dir="down" aria-label="Descendre ' + name + '">▼</button>' +
+        '</span>';
+      li.querySelector('[data-dir="up"]').addEventListener('click', () => move(i, -1));
+      li.querySelector('[data-dir="down"]').addEventListener('click', () => move(i, 1));
+      listEl.appendChild(li);
+    });
+  }
+
+  function move(i, delta){
+    const j = i + delta;
+    if(j < 0 || j >= current.length) return;
+    [current[i], current[j]] = [current[j], current[i]];
+    feedbackEl.className = 'feedback';
+    render();
+  }
+
+  function check(){
+    const items = listEl.querySelectorAll('.order-item');
+    let allCorrect = true;
+    current.forEach((name, i) => {
+      const ok = name === CORRECT_ORDER[i];
+      items[i].classList.remove('correct', 'incorrect');
+      items[i].classList.add(ok ? 'correct' : 'incorrect');
+      if(!ok) allCorrect = false;
+    });
+    if(allCorrect){
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = '✓ Exact ! Autogreffe > Isogreffe > Allogreffe : plus les molécules HLA se ressemblent, plus la greffe a de chances de réussir.';
+      markDone('order');
+    } else {
+      feedbackEl.className = 'feedback show bad';
+      feedbackEl.textContent = '✗ Pas encore le bon ordre — ajuste avec les flèches et revérifie.';
+    }
+  }
+
+  document.getElementById('order-check').addEventListener('click', check);
+  document.getElementById('order-reset').addEventListener('click', build);
+  build();
+})();
+
+/* ============================================================
+   JEU 5 — VRAI / FAUX RAPIDE
+============================================================= */
+(function(){
+  const STATEMENTS = [
+    { stmt: "Le système immunitaire tolère les molécules du soi.", answer: true },
+    { stmt: "Les molécules HLA sont identiques d'un individu à l'autre au sein d'une même espèce.", answer: false },
+    { stmt: "Une autogreffe est toujours acceptée par l'organisme.", answer: true },
+    { stmt: "Un antigène soluble se trouve sur la membrane d'un microorganisme.", answer: false },
+    { stmt: "Plus les molécules HLA du donneur et du receveur se ressemblent, plus la greffe a de chances de réussir.", answer: true },
+    { stmt: "Une cellule de mon corps transformée par un cancer reste toujours reconnue comme faisant partie du soi.", answer: false }
+  ];
+
+  let order = [];
+  let index = 0;
+  let score = 0;
+  let locked = false;
+
+  const stmtEl = document.getElementById('vf-statement');
+  const scoreEl = document.getElementById('vf-score');
+  const feedbackEl = document.getElementById('vf-feedback');
+  const btnVrai = document.getElementById('vf-vrai');
+  const btnFaux = document.getElementById('vf-faux');
+
+  function start(){
+    order = shuffle(STATEMENTS);
+    index = 0; score = 0;
+    btnVrai.disabled = false;
+    btnFaux.disabled = false;
+    showCurrent();
+  }
+
+  function showCurrent(){
+    locked = false;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    if(index >= order.length){
+      stmtEl.textContent = 'Terminé !';
+      scoreEl.textContent = 'Score final : ' + score + ' / ' + order.length;
+      btnVrai.disabled = true;
+      btnFaux.disabled = true;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = 'Bravo, tu as répondu à toutes les affirmations !';
+      markDone('vf');
+      return;
+    }
+    scoreEl.textContent = 'Affirmation ' + (index + 1) + ' / ' + order.length;
+    stmtEl.textContent = order[index].stmt;
+  }
+
+  function answer(choice){
+    if(locked || index >= order.length) return;
+    locked = true;
+    const correct = order[index].answer === choice;
+    if(correct){
+      score++;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = '✓ Exact !';
+    } else {
+      feedbackEl.className = 'feedback show bad';
+      feedbackEl.textContent = '✗ Faux — la bonne réponse était : ' + (order[index].answer ? 'Vrai' : 'Faux');
+    }
+    index++;
+    setTimeout(showCurrent, 1100);
+  }
+
+  btnVrai.addEventListener('click', () => answer(true));
+  btnFaux.addEventListener('click', () => answer(false));
+  document.getElementById('vf-reset').addEventListener('click', start);
+  start();
+})();
+
+/* ============================================================
+   JEU 6 — DÉFI FINAL CHRONOMÉTRÉ
+============================================================= */
+(function(){
+  const QUESTIONS = [
+    {
+      q: "Quel type de greffe est réalisé sur soi-même ?",
+      options: ["Isogreffe", "Allogreffe", "Autogreffe", "Aucune de ces réponses"],
+      answer: "Autogreffe"
+    },
+    {
+      q: "Quelle molécule agit comme une carte d'identité biologique ?",
+      options: ["L'antigène", "La molécule HLA", "Le greffon", "Le microorganisme"],
+      answer: "La molécule HLA"
+    },
+    {
+      q: "Où se trouve un antigène cellulaire ?",
+      options: ["Libre dans le sang", "Sur la membrane d'un microorganisme", "Dans le noyau d'une cellule du soi", "Nulle part, il n'existe pas"],
+      answer: "Sur la membrane d'un microorganisme"
+    },
+    {
+      q: "Quel facteur détermine la réussite d'une greffe ?",
+      options: ["L'âge du donneur", "La taille de l'organe", "La similitude des molécules HLA", "La couleur de l'organe"],
+      answer: "La similitude des molécules HLA"
+    },
+    {
+      q: "Que deviennent nos cellules transformées par un cancer, du point de vue du système immunitaire ?",
+      options: ["Elles restent reconnues comme soi", "Elles deviennent non-soi et peuvent être attaquées", "Elles se transforment en anticorps", "Elles ne sont jamais détectées"],
+      answer: "Elles deviennent non-soi et peuvent être attaquées"
+    }
+  ];
+
+  const TIME_PER_QUESTION = 15; // secondes
+  let order = [];
+  let index = 0;
+  let score = 0;
+  let timeLeft = TIME_PER_QUESTION;
+  let timerHandle = null;
+  let locked = false;
+
+  const startScreen = document.getElementById('defi-start-screen');
+  const gameScreen = document.getElementById('defi-game-screen');
+  const resultScreen = document.getElementById('defi-result-screen');
+  const scoreEl = document.getElementById('defi-score');
+  const timerFill = document.getElementById('defi-timer-fill');
+  const questionEl = document.getElementById('defi-question');
+  const optionsEl = document.getElementById('defi-options');
+  const feedbackEl = document.getElementById('defi-feedback');
+  const finalScoreEl = document.getElementById('defi-final-score');
+  const resultMsgEl = document.getElementById('defi-result-msg');
+
+  function startGame(){
+    order = shuffle(QUESTIONS);
+    index = 0; score = 0;
+    startScreen.style.display = 'none';
+    resultScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    showQuestion();
+  }
+
+  function showQuestion(){
+    if(index >= order.length){
+      endGame();
+      return;
+    }
+    locked = false;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    scoreEl.textContent = 'Question ' + (index + 1) + ' / ' + order.length + ' — Score : ' + score;
+    const current = order[index];
+    questionEl.textContent = current.q;
+    optionsEl.innerHTML = '';
+    shuffle(current.options).forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => answerQuestion(btn, opt));
+      optionsEl.appendChild(btn);
+    });
+    startTimer();
+  }
+
+  function startTimer(){
+    clearInterval(timerHandle);
+    timeLeft = TIME_PER_QUESTION;
+    timerFill.style.transition = 'none';
+    timerFill.style.width = '100%';
+    // force reflow so the next transition is applied cleanly
+    void timerFill.offsetWidth;
+    timerFill.style.transition = 'width 1s linear';
+    timerHandle = setInterval(() => {
+      timeLeft--;
+      timerFill.style.width = Math.max(0, (timeLeft / TIME_PER_QUESTION) * 100) + '%';
+      if(timeLeft <= 0){
+        clearInterval(timerHandle);
+        timeUp();
+      }
+    }, 1000);
+  }
+
+  function timeUp(){
+    if(locked) return;
+    locked = true;
+    const current = order[index];
+    const allBtns = optionsEl.querySelectorAll('button');
+    allBtns.forEach(b => {
+      b.disabled = true;
+      if(b.textContent === current.answer) b.classList.add('correct');
+    });
+    feedbackEl.className = 'feedback show bad';
+    feedbackEl.textContent = '⏱ Temps écoulé — la bonne réponse était : ' + current.answer;
+    index++;
+    setTimeout(showQuestion, 1400);
+  }
+
+  function answerQuestion(btn, chosen){
+    if(locked) return;
+    locked = true;
+    clearInterval(timerHandle);
+    const current = order[index];
+    const allBtns = optionsEl.querySelectorAll('button');
+    allBtns.forEach(b => {
+      b.disabled = true;
+      if(b.textContent === current.answer) b.classList.add('correct');
+    });
+    if(chosen === current.answer){
+      score++;
+      feedbackEl.className = 'feedback show ok';
+      feedbackEl.textContent = '✓ Exact !';
+    } else {
+      btn.classList.add('incorrect');
+      feedbackEl.className = 'feedback show bad';
+      feedbackEl.textContent = '✗ La bonne réponse était : ' + current.answer;
+    }
+    index++;
+    setTimeout(showQuestion, 1200);
+  }
+
+  function endGame(){
+    gameScreen.style.display = 'none';
+    resultScreen.style.display = 'block';
+    finalScoreEl.textContent = score + ' / ' + order.length;
+    let msg;
+    if(score === order.length) msg = "Score parfait, bravo, tu maîtrises l'activité !";
+    else if(score >= order.length - 1) msg = "Très bon score, presque parfait !";
+    else if(score >= order.length / 2) msg = "Bon travail, revois les points manqués et retente ta chance.";
+    else msg = "Relis le rappel du cours puis retente le défi.";
+    resultMsgEl.textContent = msg;
+    markDone('defi');
+  }
+
+  document.getElementById('defi-start').addEventListener('click', startGame);
+  document.getElementById('defi-retry').addEventListener('click', startGame);
+})();
+</script>
+</body>
+</html>
